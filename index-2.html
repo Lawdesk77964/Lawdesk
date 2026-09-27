@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" data-theme="dark" style="color-scheme: dark;"><head>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Law Desk</title>
+<style>
+:root{
+  --bg:#f6f5f2; --card:#ffffff; --ink:#1f2430; --muted:#6b7280; --line:#e3e1db;
+  --brand:#1f3a5f; --brand2:#2c5282; --accent:#b08d57; --danger:#b3261e;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){--bg:#14161c;--card:#1c1f27;--ink:#e8e6e0;--muted:#9aa0ab;--line:#2b2f3a;}
+}
+:root[data-theme="dark"]{--bg:#14161c;--card:#1c1f27;--ink:#e8e6e0;--muted:#9aa0ab;--line:#2b2f3a;}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Segoe UI',Tahoma,Arial,sans-serif;}
+header{position:sticky;top:0;padding-top:env(safe-area-inset-top,0px);background:#0e1420;color:#fff;z-index:10;}
+.hd{max-width:1000px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.hd .brand{display:flex;align-items:center;gap:10px}
+.hd .brand img{height:38px;width:38px;border-radius:8px;object-fit:cover}
+.hd h1{font-size:19px;margin:0;letter-spacing:.5px}
+.hd .who{font-size:13px;opacity:.9}
+.wrap{max-width:1000px;margin:0 auto;padding:16px}
+.tablewrap{overflow-x:auto}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:16px}
+.btn{background:var(--brand2);color:#fff;border:none;padding:9px 16px;border-radius:8px;cursor:pointer;font-size:14px}
+.btn.gold{background:var(--accent)}
+.btn.danger{background:var(--danger)}
+.btn.ghost{background:transparent;color:var(--brand2);border:1px solid var(--brand2)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+input,select{padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);font-size:14px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px}
+table{width:100%;border-collapse:collapse;min-width:640px}
+th,td{padding:8px 6px;text-align:left;border-bottom:1px solid var(--line);font-size:14px;vertical-align:top}
+th{color:var(--muted);font-weight:600;font-size:13px}
+.tag{padding:2px 8px;border-radius:100px;font-size:12px;background:var(--brand);color:#fff}
+.center{display:flex;align-items:center;justify-content:center;min-height:70vh;padding:16px}
+.loginbox{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:28px;max-width:340px;width:100%;text-align:center}
+.loginbox img{height:64px;margin-bottom:8px}
+.loginbox h2{margin-top:0}
+.msg{font-size:13px;color:var(--danger);min-height:18px}
+.small{font-size:12px;color:var(--muted)}
+.linkbox{display:flex;gap:6px;align-items:center}
+.linkbox input{flex:1;font-size:12px}
+.hidden{display:none !important}
+.perm{display:flex;gap:10px;flex-wrap:wrap;font-size:13px}
+.perm label{display:flex;gap:4px;align-items:center}
+.catchip{display:flex;align-items:center;gap:4px;background:var(--bg);border:1px solid var(--line);border-radius:100px;padding:4px 10px;font-size:13px}
+.catchip button{background:none;border:none;color:var(--danger);cursor:pointer;font-size:14px;line-height:1;padding:0}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:100;padding:16px}
+.modal{background:var(--card);border-radius:12px;padding:20px;max-width:340px;width:100%}
+.modal h3{margin-top:0}
+.modal .row{margin-top:14px;justify-content:flex-end}
+</style>
+</head>
+<body>
+<header><div class="hd">
+  <div class="brand"><img src="data:image/jpeg;base64,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" alt="Law Desk"><h1>Law Desk</h1></div>
+  <div class="who" id="whoBar"></div>
+</div></header>
+<div id="app" class="wrap"></div>
+<div id="modalRoot"></div>
+
+<script>
+let ART = null;
+let DL = null;
+
+/*SYNC_START*/let SYNC_ID = null;/*SYNC_END*/
+
+/*STATE_START*/let STATE = {"adminPassword":"admin123","categories":["Criminal","Civil","Rent","Family","QSO","Miscellaneous","Anti Corruption"],"judgments":[{"id":"dq7ud97v","number":"124","title":"Hdkks vs jkk","summary":"Gdhdhb","category":"Miscellaneous","year":"2026"},{"id":"eswf0qqt","number":"123","title":"Hjsh","summary":"Gahahah","category":"Anti Corruption","year":"Wuueueb"}],"users":[{"id":"hyjy2ydi","name":"Mohsin","token":"xx0qhdemg67bem5n","password":"mmrwd5","canSearch":true,"canAdd":true,"canEdit":true,"canDelete":false},{"id":"xlwnsx3v","name":"Sheikh Mohsin","token":"owb383hp0q28z6u2","password":"123","canSearch":true,"canAdd":false,"canEdit":false,"canDelete":false}]};/*STATE_END*/
+
+let session = null; // {role:'admin'} or {role:'user', id}
+const SESS_KEY = 'lawdesk_session';
+function saveSession(){ try{ localStorage.setItem(SESS_KEY, JSON.stringify(session)); }catch(e){} }
+function restoreSession(){
+  try{
+    const params = new URLSearchParams(location.search);
+    const token = params.get('u');
+    const s = localStorage.getItem(SESS_KEY);
+    if(!s) return;
+    const parsed = JSON.parse(s);
+    if(token){
+      // A member link is being opened: only auto-login if the saved session
+      // is that exact member. Never resume an admin (or a different member's)
+      // session just because this browser was logged in as admin before.
+      const linkUser = STATE.users.find(x=>x.token===token);
+      if(linkUser && parsed.role==='user' && parsed.id===linkUser.id){ session = parsed; }
+      return;
+    }
+    if(parsed.role==='admin'){ session = parsed; }
+    else if(parsed.role==='user' && STATE.users.find(x=>x.id===parsed.id)){ session = parsed; }
+  }catch(e){}
+}
+
+function uid(){ return Math.random().toString(36).slice(2,10); }
+
+const DEFAULT_CODES = {Criminal:'CRL', Civil:'CVL', Rent:'RNT', Family:'FML', QSO:'QSO', Miscellaneous:'MISC'};
+function catCode(cat){
+  if(DEFAULT_CODES[cat]) return DEFAULT_CODES[cat];
+  const clean = (cat||'').replace(/[^a-zA-Z]/g,'').toUpperCase();
+  return clean.slice(0,5) || 'GEN';
+}
+function nextSerial(category){
+  STATE.catCounters = STATE.catCounters || {};
+  const code = catCode(category);
+  STATE.catCounters[code] = (STATE.catCounters[code]||0) + 1;
+  return code+'.'+STATE.catCounters[code];
+}
+function isExpired(u){
+  if(!u || !u.subscriptionEnd) return false;
+  return new Date().toISOString().slice(0,10) > u.subscriptionEnd;
+}
+function todayPlus(days){
+  const d = new Date(); d.setDate(d.getDate()+days);
+  return d.toISOString().slice(0,10);
+}
+function loadLocal(){
+  try{ const s = localStorage.getItem('lawdesk_state'); if(s) STATE = JSON.parse(s); }catch(e){}
+}
+function saveLocal(){
+  try{ localStorage.setItem('lawdesk_state', JSON.stringify(STATE)); }catch(e){}
+}
+const SYNC_BASE = 'https://extendsclass.com/api/json-storage/bin';
+async function persist(){
+  saveLocal();
+  if(SYNC_ID){
+    try{
+      await fetch(SYNC_BASE+'/'+SYNC_ID, {
+        method:'PUT',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(STATE)
+      });
+    }catch(e){ /* offline — local copy still works, will sync next successful save */ }
+  }
+  if(ART){
+    try{
+      const full = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+      const patched = full.replace(
+        /\/\*STATE_START\*\/[\s\S]*?\/\*STATE_END\*\//,
+        '/*STATE_START*/let STATE = '+JSON.stringify(STATE)+';/*STATE_END*/'
+      );
+      await ART.publish(patched);
+    }catch(e){ /* ignore sync failure, local copy still works */ }
+  }
+}
+async function pullRemote(){
+  if(!SYNC_ID) return false;
+  try{
+    const res = await fetch(SYNC_BASE+'/'+SYNC_ID);
+    if(!res.ok) return false;
+    const data = await res.json();
+    if(data && typeof data==='object' && data.judgments){ STATE = data; saveLocal(); return true; }
+  }catch(e){}
+  return false;
+}
+async function refreshData(){
+  const ok = await pullRemote();
+  render();
+  showModal({title: ok? 'Data refreshed' : 'Could not reach the internet — showing last saved copy', fields:[], confirmText:'OK', onConfirm:closeModal});
+}
+function downloadCurrentFile(){
+  try{
+    const full = '<!DOCTYPE html>\n' + document.documentElement.outerHTML
+      .replace(/\/\*STATE_START\*\/[\s\S]*?\/\*STATE_END\*\//, '/*STATE_START*/let STATE = '+JSON.stringify(STATE)+';/*STATE_END*/')
+      .replace(/\/\*SYNC_START\*\/[\s\S]*?\/\*SYNC_END\*\//, '/*SYNC_START*/let SYNC_ID = '+JSON.stringify(SYNC_ID)+';/*SYNC_END*/');
+    const blob = new Blob([full], {type:'text/html'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'lawdesk.html';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(()=>URL.revokeObjectURL(url), 5000);
+  }catch(e){}
+}
+async function setupSync(){
+  if(SYNC_ID){
+    showModal({title:'Internet sync is already on for this file. Use "Download App File" and send that copy to everyone.', fields:[], confirmText:'OK', onConfirm:closeModal});
+    return;
+  }
+  try{
+    const res = await fetch(SYNC_BASE, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(STATE)
+    });
+    if(!res.ok) throw new Error('status '+res.status);
+    const info = await res.json();
+    if(!info.id) throw new Error('no id returned');
+    SYNC_ID = info.id;
+    saveLocal();
+    render();
+    showModal({title:'Internet sync enabled. Now tap "Download App File" and send that new file to everyone — that copy will stay in sync automatically.', fields:[], confirmText:'OK', onConfirm:closeModal});
+  }catch(e){
+    showModal({title:'Sync setup failed: '+(e && e.message ? e.message : 'unknown error'), fields:[], confirmText:'OK', onConfirm:closeModal});
+  }
+}
+
+/* ---------- in-page modal (replaces prompt/confirm/alert, which are blocked here) ---------- */
+function closeModal(){ document.getElementById('modalRoot').innerHTML=''; }
+function showModal({title, fields=[], confirmText='OK', cancelText='Cancel', onConfirm, danger=false}){
+  const root = document.getElementById('modalRoot');
+  root.innerHTML = `<div class="modal-bg" onclick="if(event.target===this) closeModal()">
+    <div class="modal">
+      <h3>${title}</h3>
+      ${fields.map((f,i)=>`<div class="row"><input id="mf${i}" type="${f.type||'text'}" placeholder="${f.placeholder||''}" value="${f.value||''}" style="width:100%"></div>`).join('')}
+      <div class="msg" id="modalMsg"></div>
+      <div class="row">
+        <button class="btn ghost" onclick="closeModal()">${cancelText}</button>
+        <button class="btn ${danger?'danger':''}" id="modalOk">${confirmText}</button>
+      </div>
+    </div>
+  </div>`;
+  document.getElementById('modalOk').onclick = ()=>{
+    const values = fields.map((f,i)=>document.getElementById('mf'+i).value);
+    onConfirm(values);
+  };
+}
+function confirmModal(title, onYes){
+  showModal({title, confirmText:'Yes', cancelText:'Cancel', danger:true, onConfirm:()=>{ closeModal(); onYes(); }});
+}
+function showTextModal(title, text){
+  const root = document.getElementById('modalRoot');
+  root.innerHTML = `<div class="modal-bg" onclick="if(event.target===this) closeModal()">
+    <div class="modal" style="max-width:480px">
+      <h3>${title}</h3>
+      <textarea id="backupText" readonly style="width:100%;height:200px;font-size:11px;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)"></textarea>
+      <div class="small" style="margin-top:6px">Tap inside, select all, and copy — then paste it into a note or file to keep as your backup.</div>
+      <div class="row">
+        <button class="btn ghost" onclick="closeModal()">Close</button>
+        <button class="btn" onclick="copyBackupText()">Copy</button>
+      </div>
+    </div>
+  </div>`;
+  document.getElementById('backupText').value = text;
+}
+function copyBackupText(){
+  const el = document.getElementById('backupText');
+  el.select();
+  el.setSelectionRange(0, 999999);
+  try{ navigator.clipboard && navigator.clipboard.writeText(el.value); }catch(e){}
+  try{ document.execCommand('copy'); }catch(e){}
+}
+
+function render(){
+  const app = document.getElementById('app');
+  const who = document.getElementById('whoBar');
+  if(!session){ who.textContent=''; return renderLogin(app); }
+  if(session.role==='admin'){ who.textContent='Admin'; return renderAdmin(app); }
+  const u = STATE.users.find(x=>x.id===session.id);
+  if(!u){ session=null; return renderLogin(app); }
+  if(isExpired(u)){ session=null; try{ localStorage.removeItem(SESS_KEY); }catch(e){} who.textContent=''; renderLogin(app); showModal({title:'Your access has expired. Contact admin to renew.', fields:[], confirmText:'OK', onConfirm:closeModal}); return; }
+  who.textContent = u.name;
+  renderMember(app,u);
+}
+
+function renderLogin(app){
+  const params = new URLSearchParams(location.search);
+  const token = params.get('u');
+  let userForLink = token ? STATE.users.find(x=>x.token===token) : null;
+  app.innerHTML = `<div class="center"><div class="loginbox">
+    <h2>${userForLink? 'Welcome, '+userForLink.name : 'Sign in to Law Desk'}</h2>
+    <div class="row" style="justify-content:center">
+      <input id="pw" type="password" placeholder="Enter password" style="width:100%">
+    </div>
+    <div class="msg" id="loginMsg"></div>
+    <button class="btn" style="width:100%" onclick="doLogin(${userForLink?`'${userForLink.id}'`:'null'})">Log In</button>
+    ${!userForLink? `<p class="small">Log in with the admin password</p>`:''}
+  </div></div>`;
+}
+
+function doLogin(userId){
+  const pw = document.getElementById('pw').value;
+  if(userId){
+    const u = STATE.users.find(x=>x.id===userId);
+    if(u && u.password===pw){
+      if(isExpired(u)){ document.getElementById('loginMsg').textContent='Your access has expired. Contact admin to renew.'; return; }
+      session={role:'user',id:u.id}; saveSession(); render(); return;
+    }
+  } else {
+    if(pw===STATE.adminPassword){ session={role:'admin'}; saveSession(); render(); return; }
+  }
+  document.getElementById('loginMsg').textContent='Incorrect password';
+}
+
+function logout(){ session=null; try{ localStorage.removeItem(SESS_KEY); }catch(e){} history.replaceState(null,'',location.pathname); render(); }
+
+function matches(j, q, cat){
+  const hay = (j.number+' '+j.title+' '+j.summary+' '+j.year).toLowerCase();
+  const okQ = !q || hay.includes(q.toLowerCase());
+  const okC = !cat || j.category===cat;
+  return okQ && okC;
+}
+
+function judgmentRows(list, isAdmin, canRequest){
+  if(!list.length) return `<tr><td colspan="7" class="small">No judgments found</td></tr>`;
+  return list.map(j=>`<tr>
+    <td><span class="tag">${j.serial||''}</span></td>
+    <td>${j.number||''}</td><td>${j.title||''}</td><td>${j.summary||''}</td>
+    <td>${j.category||''}</td><td>${j.year||''}</td>
+    <td>
+      ${isAdmin?`<button class="btn ghost" onclick="editJudgment('${j.id}')">Edit</button>
+      <button class="btn danger" onclick="deleteJudgment('${j.id}')">Delete</button>`
+      : canRequest? `<button class="btn ghost" onclick="requestChange('${j.id}')">Request Change</button>` : ''}
+    </td>
+  </tr>`).join('');
+}
+
+function renderAdmin(app){
+  const tab = window._tab || 'judgments';
+  const pending = (STATE.requests||[]).length;
+  app.innerHTML = `
+  <div class="row">
+    <button class="btn ${tab==='judgments'?'':'ghost'}" onclick="setTab('judgments')">Judgments</button>
+    <button class="btn ${tab==='categories'?'':'ghost'}" onclick="setTab('categories')">Categories</button>
+    <button class="btn ${tab==='users'?'':'ghost'}" onclick="setTab('users')">Members / Access</button>
+    <button class="btn ${tab==='requests'?'':'ghost'}" onclick="setTab('requests')">Requests${pending?' ('+pending+')':''}</button>
+    <button class="btn gold" onclick="changeAdminPw()">Change Admin Password</button>
+    <button class="btn ghost" onclick="logout()">Log Out</button>
+  </div>
+  <div class="row">
+    ${SYNC_ID? `<span class="small">🟢 Auto-sync ON (works once hosted online)</span> <button class="btn ghost" onclick="refreshData()">Refresh</button>`
+              : `<button class="btn gold" onclick="setupSync()">Enable Internet Sync</button>`}
+  </div>
+  <div id="tabBody"></div>`;
+  if(tab==='judgments') renderJudgmentsTab(true,true,true);
+  else if(tab==='categories') renderCategoriesTab();
+  else if(tab==='requests') renderRequestsTab();
+  else renderUsersTab();
+}
+
+function setTab(t){ window._tab=t; render(); }
+
+function renderCategoriesTab(){
+  const body = document.getElementById('tabBody');
+  body.innerHTML = `<div class="card">
+    <p class="small">Admin has full access to add or remove categories.</p>
+    <div class="row">${STATE.categories.map(c=>`<span class="catchip">${c}<button onclick="removeCategory('${c.replace(/'/g,"\\'")}')">&times;</button></span>`).join('')}</div>
+    <div class="row"><input id="newCat" placeholder="New category name"><button class="btn" onclick="addCategory()">Add Category</button></div>
+  </div>`;
+}
+async function addCategory(){
+  const v = document.getElementById('newCat').value.trim();
+  if(!v || STATE.categories.includes(v)) return;
+  STATE.categories.push(v);
+  await persist(); render();
+}
+async function removeCategory(c){
+  STATE.categories = STATE.categories.filter(x=>x!==c);
+  await persist(); render();
+}
+
+function renderRequestsTab(){
+  const body = document.getElementById('tabBody');
+  const reqs = STATE.requests||[];
+  body.innerHTML = `<div class="card">
+    ${!reqs.length? `<p class="small">No pending requests.</p>` : reqs.map(r=>`
+      <div class="row" style="border-bottom:1px solid var(--line);padding-bottom:8px;align-items:flex-start">
+        <div style="flex:1">
+          <div><b>${r.label}</b></div>
+          <div class="small">From: ${r.memberName} — ${r.createdAt}</div>
+          <div>${r.message}</div>
+        </div>
+        <button class="btn ghost" onclick="openJudgmentFromRequest('${r.judgmentId}')">Open</button>
+        <button class="btn danger" onclick="dismissRequest('${r.id}')">Dismiss</button>
+      </div>`).join('')}
+  </div>`;
+}
+function openJudgmentFromRequest(judgmentId){
+  window._tab='judgments'; render();
+  const j = STATE.judgments.find(x=>x.id===judgmentId);
+  if(j) editJudgment(judgmentId);
+}
+async function dismissRequest(id){
+  STATE.requests = (STATE.requests||[]).filter(r=>r.id!==id);
+  await persist(); render();
+}
+
+function renderJudgmentsTab(canSearch,canAdd,isAdmin){
+  const body = document.getElementById('tabBody');
+  const q = window._q||''; const cat = window._cat||'';
+  body.innerHTML = `
+  ${isAdmin? `<div class="row">
+    <button class="btn ghost" onclick="exportExcel()">Export Judgments (Excel)</button>
+    <button class="btn ghost" onclick="triggerImport()">Import from Excel</button>
+    <input type="file" id="excelFile" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleExcelFile(event)">
+  </div>`:''}
+  ${canAdd? `<div class="card">
+    <div class="grid">
+      <input id="jNum" placeholder="Judgment number">
+      <input id="jTitle" placeholder="Case title">
+      <input id="jYear" placeholder="Year">
+      <select id="jCat"><option value="">Select category</option>${STATE.categories.map(c=>`<option>${c}</option>`).join('')}</select>
+    </div>
+    <div class="row"><input id="jCatNew" placeholder="Or type a new category (leave blank to use dropdown)" style="flex:1"></div>
+    <div class="row"><input id="jSummary" placeholder="Short summary" style="flex:1"></div>
+    <button class="btn" onclick="addJudgment()">Add Judgment</button>
+  </div>`:''}
+  <div class="card">
+    ${canSearch? `<div class="row">
+      <input id="searchQ" placeholder="Search by number, title, facts or year" value="${q}" style="flex:1" oninput="setSearch(this.value)">
+      <select id="searchCat" onchange="setCat(this.value)">
+        <option value="">All categories</option>
+        ${STATE.categories.map(c=>`<option ${c===cat?'selected':''}>${c}</option>`).join('')}
+      </select>
+    </div>`:''}
+    <div class="tablewrap"><table><thead><tr><th>S.No</th><th>Number</th><th>Title</th><th>Summary</th><th>Category</th><th>Year</th><th></th></tr></thead>
+    <tbody>${judgmentRows(STATE.judgments.filter(j=>matches(j,q,cat)), isAdmin, !isAdmin)}</tbody></table></div>
+  </div>`;
+}
+
+function setSearch(v){
+  window._q=v; renderCurrentJudgments();
+  const el = document.getElementById('searchQ');
+  if(el){ el.focus(); const len = el.value.length; el.setSelectionRange(len,len); }
+}
+function setCat(v){ window._cat=v; renderCurrentJudgments(); }
+function renderCurrentJudgments(){
+  if(session.role==='admin'){ renderJudgmentsTab(true,true,true); return; }
+  const u = STATE.users.find(x=>x.id===session.id);
+  renderJudgmentsTab(u.canSearch,u.canAdd,false);
+}
+
+async function exportBackup(){
+  const data = JSON.stringify(STATE, null, 2);
+  if(DL){
+    try{ await DL.save({filename:'lawdesk-backup-'+new Date().toISOString().slice(0,10)+'.json', data}); return; }catch(e){}
+  }
+  try{
+    const blob = new Blob([data], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'lawdesk-backup-'+new Date().toISOString().slice(0,10)+'.json';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(()=>URL.revokeObjectURL(url), 5000);
+    return;
+  }catch(e){}
+  showTextModal('Backup Data', data);
+}
+function triggerImportBackup(){ document.getElementById('backupFile').click(); }
+async function handleImportBackup(e){
+  const file = e.target.files[0]; if(!file) return;
+  try{
+    const text = await file.text();
+    const data = JSON.parse(text);
+    if(!data || !Array.isArray(data.judgments) || !Array.isArray(data.users)){
+      throw new Error('This does not look like a Law Desk backup file');
+    }
+    confirmModal('This will replace all current data on this phone with the backup file. Continue?', async ()=>{
+      STATE = data;
+      await persist();
+      render();
+      showModal({title:'Backup imported successfully', fields:[], confirmText:'OK', onConfirm:closeModal});
+    });
+  }catch(err){
+    showModal({title:'Could not read that file: '+(err.message||'invalid file'), fields:[], confirmText:'OK', onConfirm:closeModal});
+  }
+  e.target.value='';
+}
+function exportExcel(){
+  const rows = STATE.judgments.map(j=>({
+    'S.No': j.serial||'',
+    'Judgment Number': j.number||'',
+    'Case Title': j.title||'',
+    'Summary': j.summary||'',
+    'Category': j.category||'',
+    'Year': j.year||''
+  }));
+  const ws = XLSX.utils.json_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Judgments');
+  XLSX.writeFile(wb, 'lawdesk-judgments-'+new Date().toISOString().slice(0,10)+'.xlsx');
+}
+function requestChange(judgmentId){
+  const j = STATE.judgments.find(x=>x.id===judgmentId); if(!j) return;
+  const who = STATE.users.find(x=>session && x.id===session.id);
+  showModal({
+    title:'Tell admin what needs to change on '+(j.serial||j.number||j.title),
+    fields:[{placeholder:'e.g. please delete this / fix the year to 2024'}],
+    confirmText:'Send Request',
+    onConfirm: async (vals)=>{
+      const msg = (vals[0]||'').trim();
+      if(!msg) return;
+      STATE.requests = STATE.requests || [];
+      STATE.requests.push({id:uid(), judgmentId, label:(j.serial||'')+' — '+(j.title||j.number||''), memberName: who?who.name:'Member', message: msg, createdAt: new Date().toISOString().slice(0,16).replace('T',' ')});
+      closeModal();
+      await persist();
+      showModal({title:'Request sent to admin', fields:[], confirmText:'OK', onConfirm:closeModal});
+    }
+  });
+}
+function triggerImport(){ document.getElementById('excelFile').click(); }
+async function handleExcelFile(e){
+  const file = e.target.files[0]; if(!file) return;
+  try{
+    const buf = await file.arrayBuffer();
+    const wb = XLSX.read(buf, {type:'array'});
+    const sheet = wb.Sheets[wb.SheetNames[0]];
+    const rows = XLSX.utils.sheet_to_json(sheet, {defval:''});
+    const get = (r,keys)=>{ for(const k of Object.keys(r)){ if(keys.includes(k.trim().toLowerCase())) return String(r[k]).trim(); } return ''; };
+    let added=0;
+    rows.forEach(r=>{
+      const number = get(r,['number','judgment number','judgment no','no','judgment #']);
+      const title = get(r,['title','case title']);
+      const summary = get(r,['summary','facts','short summary','nutshell']);
+      const category = get(r,['category']);
+      const year = get(r,['year']);
+      let serial = get(r,['s.no','sno','serial','serial no','sr.no']);
+      if(!number && !title) return;
+      if(category && !STATE.categories.includes(category)) STATE.categories.push(category);
+      if(!serial) serial = nextSerial(category);
+      STATE.judgments.push({id:uid(), serial, number, title, summary, category, year});
+      added++;
+    });
+    await persist(); render();
+    showModal({title:'Imported '+added+' judgment(s)', fields:[], confirmText:'OK', onConfirm:closeModal});
+  }catch(err){
+    showModal({title:'Could not read that file. Use .xlsx, .xls or .csv with columns like Number, Title, Summary, Category, Year.', fields:[], confirmText:'OK', onConfirm:closeModal});
+  }
+  e.target.value='';
+}
+
+async function addJudgment(){
+  const newCat = document.getElementById('jCatNew').value.trim();
+  const category = newCat || document.getElementById('jCat').value;
+  const j = {
+    id: uid(),
+    serial: nextSerial(category),
+    number: document.getElementById('jNum').value.trim(),
+    title: document.getElementById('jTitle').value.trim(),
+    summary: document.getElementById('jSummary').value.trim(),
+    category: category,
+    year: document.getElementById('jYear').value.trim()
+  };
+  if(!j.number && !j.title){ showModal({title:'Enter at least a number or a title', fields:[], confirmText:'OK', onConfirm:closeModal}); return; }
+  if(newCat && !STATE.categories.includes(newCat)) STATE.categories.push(newCat);
+  STATE.judgments.push(j);
+  await persist();
+  render();
+}
+
+async function deleteJudgment(id){
+  confirmModal('Delete this judgment?', async ()=>{
+    STATE.judgments = STATE.judgments.filter(j=>j.id!==id);
+    await persist(); render();
+  });
+}
+
+function editJudgment(id){
+  const j = STATE.judgments.find(x=>x.id===id); if(!j) return;
+  showModal({
+    title:'Edit Judgment',
+    fields:[
+      {placeholder:'Judgment number', value:j.number},
+      {placeholder:'Title', value:j.title},
+      {placeholder:'Summary', value:j.summary},
+      {placeholder:'Year', value:j.year}
+    ],
+    confirmText:'Save',
+    onConfirm: async (vals)=>{
+      [j.number,j.title,j.summary,j.year] = vals;
+      closeModal();
+      await persist(); render();
+    }
+  });
+}
+
+function renderUsersTab(){
+  const body = document.getElementById('tabBody');
+  body.innerHTML = `
+  <div class="card">
+    <div class="row"><input id="newUserName" placeholder="Member name"><button class="btn" onclick="addUser()">Add Member</button></div>
+    <div class="tablewrap"><table><thead><tr><th>Name</th><th>Access</th><th>Expires</th><th>Link</th><th>Actions</th></tr></thead>
+    <tbody>${STATE.users.map(u=>`<tr>
+      <td>${u.name}</td>
+      <td><div class="perm">
+        <label><input type="checkbox" ${u.canSearch?'checked':''} onchange="togglePerm('${u.id}','canSearch',this.checked)"> Search</label>
+        <label><input type="checkbox" ${u.canAdd?'checked':''} onchange="togglePerm('${u.id}','canAdd',this.checked)"> Add</label>
+      </div></td>
+      <td>${u.subscriptionEnd||'—'}${isExpired(u)?' <span style="color:var(--danger)">(expired)</span>':''}
+        <div><button class="btn ghost" onclick="renewUser('${u.id}')">Renew</button></div>
+      </td>
+      <td><div class="linkbox"><input readonly value="${location.origin+location.pathname}?u=${u.token}"><button class="btn ghost" onclick="copyLink('${u.token}')">Copy</button></div></td>
+      <td>
+        <button class="btn gold" onclick="setUserPw('${u.id}')">Set Password</button>
+        <button class="btn danger" onclick="deleteUser('${u.id}')">Delete</button>
+      </td>
+    </tr>`).join('')}</tbody></table></div>
+  </div>`;
+}
+function renewUser(id){
+  const u = STATE.users.find(x=>x.id===id); if(!u) return;
+  showModal({
+    title:'Set access expiry for '+u.name,
+    fields:[{placeholder:'Expiry date', type:'date', value: u.subscriptionEnd||todayPlus(30)}],
+    confirmText:'Save',
+    onConfirm: async (vals)=>{
+      u.subscriptionEnd = vals[0];
+      closeModal();
+      await persist(); render();
+    }
+  });
+}
+
+async function addUser(){
+  const name = document.getElementById('newUserName').value.trim();
+  if(!name){ return; }
+  showModal({
+    title:'Set a password and access expiry for '+name,
+    fields:[
+      {placeholder:'Password', value: Math.random().toString(36).slice(2,8)},
+      {placeholder:'Access expires on', type:'date', value: todayPlus(30)}
+    ],
+    confirmText:'Add Member',
+    onConfirm: async (vals)=>{
+      const pw = vals[0] || Math.random().toString(36).slice(2,8);
+      const subscriptionEnd = vals[1] || todayPlus(30);
+      STATE.users.push({id:uid(), name, token:uid()+uid(), password:pw, subscriptionEnd, canSearch:true, canAdd:false});
+      closeModal();
+      await persist(); render();
+    }
+  });
+}
+async function togglePerm(id,key,val){
+  const u = STATE.users.find(x=>x.id===id); if(u){ u[key]=val; await persist(); }
+}
+function setUserPw(id){
+  const u = STATE.users.find(x=>x.id===id); if(!u) return;
+  showModal({
+    title:'Set password for '+u.name,
+    fields:[{placeholder:'New password', value:u.password}],
+    confirmText:'Save',
+    onConfirm: async (vals)=>{
+      u.password = vals[0];
+      closeModal();
+      await persist(); render();
+    }
+  });
+}
+async function deleteUser(id){
+  confirmModal('Delete this member?', async ()=>{
+    STATE.users = STATE.users.filter(x=>x.id!==id);
+    await persist(); render();
+  });
+}
+function copyLink(token){
+  const url = location.origin+location.pathname+'?u='+token;
+  navigator.clipboard && navigator.clipboard.writeText(url);
+}
+function changeAdminPw(){
+  showModal({
+    title:'Change admin password',
+    fields:[{placeholder:'New admin password', value:STATE.adminPassword}],
+    confirmText:'Save',
+    onConfirm: async (vals)=>{
+      STATE.adminPassword = vals[0];
+      closeModal();
+      await persist();
+    }
+  });
+}
+
+function renderMember(app,u){
+  app.innerHTML = `<div class="row">
+    ${SYNC_ID? `<button class="btn ghost" onclick="refreshData()">Refresh</button>`:''}
+    <button class="btn ghost" onclick="logout()">Log Out</button>
+  </div><div id="tabBody"></div>`;
+  renderJudgmentsTab(u.canSearch,u.canAdd,false);
+}
+
+(async function init(){
+  if(SYNC_ID){ await pullRemote(); }
+  else { loadLocal(); }
+  let migrated = false;
+  STATE.judgments.forEach(j=>{ if(!j.serial){ j.serial = nextSerial(j.category); migrated = true; } });
+  if(migrated){ saveLocal(); }
+  restoreSession();
+  try{
+    DL = await window.claude?.use?.('downloads');
+  }catch(e){ DL = null; }
+  try{
+    ART = await window.claude?.use?.('artifact');
+  }catch(e){ ART = null; }
+  render();
+})();
+</script>
+
+
+</body></html>
